@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGPA Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+    }
+    
+    .controls {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .semester {
+      border: 2px solid #e0e0e0;
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 10px;
+      background: #fafafa;
+      position: relative;
+    }
+    
+    .semester h3 {
+      margin-top: 0;
+      color: #667eea;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    
+    .subject {
+      margin: 10px 0;
+      padding: 10px;
+      background: #fff;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    
+    .subject-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .input-group label {
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    
+    input[type="number"] {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 100px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    button {
+      margin: 8px 6px;
+      padding: 12px 20px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-calculate {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      font-size: 16px;
+      padding: 15px 30px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .error {
+      color: #dc3545;
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    
+    .results {
+      margin-top: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      color: white;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      color: #333;
+    }
+    
+    th {
+      background: #f8f9fa;
+      font-weight: bold;
+    }
+    
+    .cgpa-row {
+      background: #667eea !important;
+      color: white !important;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    
+    .remove-subject {
+      margin-left: 10px;
+    }
+    
+    .mode-toggle {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .mode-toggle button {
+      margin: 0 5px;
+    }
+    
+    .mode-toggle .active {
+      background: #667eea;
+      color: white;
+    }
+    
+    #backend-section {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 2px solid #667eea;
+    }
+    
+    .api-demo {
+      margin-top: 20px;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    .response {
+      margin-top: 15px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 CGPA Calculator</h1>
+    
+    <div class="mode-toggle">
+      <button onclick="switchMode('frontend')" class="btn-primary active" id="frontend-btn">Frontend Mode</button>
+      <button onclick="switchMode('backend')" class="btn-secondary" id="backend-btn">Backend API Mode</button>
+    </div>
+    
+    <div id="frontend-section">
+      <div class="controls">
+        <button onclick="addSemester()" class="btn-primary">➕ Add Semester</button>
+        <button onclick="calculate()" class="btn-calculate">📊 Calculate CGPA</button>
+        <button onclick="clearAll()" class="btn-danger">🗑️ Clear All</button>
+      </div>
+      
+      <div id="semesters"></div>
+      <div id="error" class="error" style="display:none;"></div>
+      <div id="results"></div>
+    </div>
+    
+    <div id="backend-section">
+      <h3>Python Backend API Integration</h3>
+      <p>This section demonstrates how the frontend would communicate with a Python backend API.</p>
+      
+      <div class="api-demo">
+        <h4>Sample JSON Input:</h4>
+        <textarea id="json-input" placeholder='{"semesters": [{"subjects": [{"gp": 9.0, "credits": 3.0}, {"gp": 8.5, "credits": 4.0}]}, {"subjects": [{"gp": 9.2, "credits": 3.0}, {"gp": 8.8, "credits": 4.0}]}]}'></textarea>
+        <br>
+        <button onclick="simulateBackendCall()" class="btn-primary">🚀 Simulate Backend API Call</button>
+        
+        <h4>API Response:</h4>
+        <div id="api-response" class="response"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let semesterCount = 0;
+    let currentMode = 'frontend';
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('frontend-btn').classList.remove('active');
+      document.getElementById('backend-btn').classList.remove('active');
+      
+      if (mode === 'frontend') {
+        document.getElementById('frontend-section').style.display = 'block';
+        document.getElementById('backend-section').style.display = 'none';
+        document.getElementById('frontend-btn').classList.add('active');
+      } else {
+        document.getElementById('frontend-section').style.display = 'none';
+        document.getElementById('backend-section').style.display = 'block';
+        document.getElementById('backend-btn').classList.add('active');
+      }
+    }
+
+    // Input Module: Add Semester
+    function addSemester() {
+      semesterCount++;
+      const div = document.createElement("div");
+      div.className = "semester";
+      div.id = `sem${semesterCount}`;
+      div.innerHTML = `
+        <h3>📚 Semester ${semesterCount}</h3>
+        <div class="subjects"></div>
+        <button onclick="addSubject(${semesterCount})" class="btn-secondary">➕ Add Subject</button>
+        <button onclick="removeSemester(${semesterCount})" class="btn-danger">🗑️ Remove Semester</button>
+      `;
+      document.getElementById("semesters").appendChild(div);
+      
+      // Add first subject by default
+      addSubject(semesterCount);
+    }
+
+    // Input Module: Add Subject Row
+    function addSubject(semId) {
+      const subjectDiv = document.createElement("div");
+      subjectDiv.className = "subject";
+      const subjectId = Date.now(); // Unique ID for each subject
+      subjectDiv.id = `subject${subjectId}`;
+      
+      subjectDiv.innerHTML = `
+        <div class="subject-row">
+          <div class="input-group">
+            <label>Grade Point:</label>
+            <input type="number" step="0.1" min="0" max="10" class="gp" placeholder="0.0 - 10.0">
+          </div>
+          <div class="input-group">
+            <label>Credits:</label>
+            <input type="number" step="0.5" min="0.5" class="cr" placeholder="0.5+">
+          </div>
+          <button onclick="removeSubject(${subjectId})" class="btn-danger remove-subject">❌</button>
+        </div>
+      `;
+      document.querySelector(`#sem${semId} .subjects`).appendChild(subjectDiv);
+    }
+
+    function removeSubject(subjectId) {
+      const subject = document.getElementById(`subject${subjectId}`);
+      if (subject) {
+        subject.remove();
+      }
+    }
+
+    function removeSemester(semId) {
+      const semester = document.getElementById(`sem${semId}`);
+      if (semester) {
+        semester.remove();
+      }
+    }
+
+    function clearAll() {
+      document.getElementById("semesters").innerHTML = "";
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("error").style.display = "none";
+      semesterCount = 0;
+    }
+
+    // Validation + Calculation + Result Module
+    function calculate() {
+      const errorDiv = document.getElementById("error");
+      errorDiv.style.display = "none";
+      errorDiv.innerText = "";
+      
+      const semDivs = document.querySelectorAll(".semester");
+      if (semDivs.length === 0) {
+        showError("Please add at least one semester.");
+        return;
+      }
+
+      let sgpas = [];
+      let output = `<div class="results">
+        <h3>📈 CGPA Calculation Results</h3>
+        <table>
+          <tr><th>Semester</th><th>SGPA</th><th>Total Credits</th></tr>`;
+      
+      for (let i = 0; i < semDivs.length; i++) {
+        const subjects = semDivs[i].querySelectorAll(".subject");
+        if (subjects.length === 0) {
+          showError(`Semester ${i+1} has no subjects.`);
+          return;
+        }
+
+        let totalPoints = 0, totalCredits = 0;
+        for (let subj of subjects) {
+          const gp = parseFloat(subj.querySelector(".gp").value);
+          const cr = parseFloat(subj.querySelector(".cr").value);
+
+          // Validation Module
+          if (isNaN(gp) || isNaN(cr)) {
+            showError("Please fill all Grade Point and Credit fields.");
+            return;
+          }
+          if (gp < 0 || gp > 10) {
+            showError("Grade Point must be between 0 and 10.");
+            return;
+          }
+          if (cr <= 0) {
+            showError("Credit must be positive.");
+            return;
+          }
+
+          totalPoints += gp * cr;
+          totalCredits += cr;
+        }
+
+        const sgpa = (totalPoints / totalCredits).toFixed(2);
+        sgpas.push(parseFloat(sgpa));
+        output += `<tr><td>Semester ${i+1}</td><td>${sgpa}</td><td>${totalCredits.toFixed(1)}</td></tr>`;
+      }
+
+      const cgpa = (sgpas.reduce((a,b)=>a+b,0) / sgpas.length).toFixed(2);
+      output += `<tr class="cgpa-row"><td><strong>Final CGPA</strong></td><td><strong>${cgpa}</strong></td><td><strong>${sgpas.length} Semesters</strong></td></tr>`;
+      output += `</table></div>`;
+      
+      document.getElementById("results").innerHTML = output;
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById("error");
+      errorDiv.innerText = message;
+      errorDiv.style.display = "block";
+    }
+
+    // Backend API Simulation
+    function simulateBackendCall() {
+      const jsonInput = document.getElementById('json-input').value;
+      const responseDiv = document.getElementById('api-response');
+      
+      try {
+        const data = JSON.parse(jsonInput);
+        
+        // Simulate the Python backend calculation
+        const result = calculateCGPABackend(data);
+        
+        responseDiv.innerHTML = JSON.stringify(result, null, 2);
+        responseDiv.style.color = '#28a745';
+      } catch (error) {
+        responseDiv.innerHTML = `Error: ${error.message}`;
+        responseDiv.style.color = '#dc3545';
+      }
+    }
+
+    function calculateCGPABackend(data) {
+      // Simulate the Python backend logic
+      const sgpas = [];
+      
+      for (let i = 0; i < data.semesters.length; i++) {
+        const semester = data.semesters[i];
+        let totalPoints = 0;
+        let totalCredits = 0;
+        
+        for (const subject of semester.subjects) {
+          totalPoints += subject.gp * subject.credits;
+          totalCredits += subject.credits;
+        }
+        
+        const sgpa = parseFloat((totalPoints / totalCredits).toFixed(2));
+        sgpas.push(sgpa);
+      }
+      
+      const cgpa = parseFloat((sgpas.reduce((a, b) => a + b, 0) / sgpas.length).toFixed(2));
+      
+      return {
+        status: 'success',
+        data: {
+          sgpas: sgpas,
+          cgpa: cgpa,
+          total_semesters: sgpas.length
+        }
+      };
+    }
+
+    // Initialize with one semester
+    window.onload = function() {
+      addSemester();
+    };
+  </script>
+</body>
+</html>
